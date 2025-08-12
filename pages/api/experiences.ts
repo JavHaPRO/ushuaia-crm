@@ -1,65 +1,28 @@
-
-import type { NextApiRequest, NextApiResponse } from 'next'
 import { google } from 'googleapis'
-
-export type Experience = {
-  id: string
-  title: string
-  category?: string
-  season?: string
-  bookingType?: 'instant'|'consult'
-  priceAdultARS?: number|null
-  priceChildARS?: number|null
-  childAgeMin?: number|null
-  childAgeMax?: number|null
-  durationHours?: number|null
-  daysCount?: number|null
-  difficulty?: string
-  providerName?: string
-  refCodeProvider?: string
-  isActive?: boolean
-  startDate?: string
-  endDate?: string
-  language?: string[]
-  minPax?: number|null
-  maxPax?: number|null
-  meetingPoint?: string
-  schedule?: string
-  includes?: string[]
-  notIncludes?: string[]
-  cancellationPolicy?: string
-  refundable?: boolean
-  images?: string[]
-  videoUrl?: string
-  mapUrl?: string
-  description?: string
-  highlights?: string[]
-  notesInternal?: string
-  checkoutUrl?: string
-}
+import type { NextApiRequest, NextApiResponse } from 'next'
 
 const SHEET_ID = process.env.SHEET_ID!
 const SHEET_RANGE = process.env.SHEET_RANGE || 'experiences!A1:AG'
-const GOOGLE_SA_EMAIL = process.env.GOOGLE_SA_EMAIL!
-const GOOGLE_SA_PRIVATE_KEY = (process.env.GOOGLE_SA_PRIVATE_KEY || '').replace(/\\n/g, '\n')
 
-let cache: { ts: number; items: Experience[] } | null = null
-const CACHE_TTL_MS = 5 * 60 * 1000 // 5 min
+// NEW: auth por JSON completo (evita problemas de PEM)
+function getSheetsClient() {
+  const pa = process.env.GOOGLE_SA_JSON
+  if (!pa) throw new Error('GOOGLE_SA_JSON missing')
+  const credentials = JSON.parse(pa)
+  const auth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: [
+      'https://www.googleapis.com/auth/spreadsheets.readonly',
+      'https://www.googleapis.com/auth/drive.readonly',
+    ],
+  })
+  const sheets = google.sheets({ version: 'v4', auth })
+  return sheets
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    if (cache && Date.now() - cache.ts < CACHE_TTL_MS) {
-      return res.status(200).json({ count: cache.items.length, items: cache.items, cached: true })
-    }
-
-    const jwt = new google.auth.JWT(
-      GOOGLE_SA_EMAIL,
-      undefined,
-      GOOGLE_SA_PRIVATE_KEY,
-      ['https://www.googleapis.com/auth/spreadsheets.readonly']
-    )
-    const sheets = google.sheets({ version: 'v4', auth: jwt })
-
+    const sheets = getSheetsClient()
     const { data } = await sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
       range: SHEET_RANGE,
