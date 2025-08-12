@@ -1,3 +1,40 @@
+// al principio del archivo
+export type Experience = {
+  id: string
+  title: string
+  category?: string
+  season?: string
+  bookingType?: 'instant' | 'consult'
+  priceAdultARS?: number | null
+  priceChildARS?: number | null
+  childAgeMin?: number | null
+  childAgeMax?: number | null
+  durationHours?: number | null
+  daysCount?: number | null
+  difficulty?: string
+  providerName?: string
+  refCodeProvider?: string
+  isActive?: boolean
+  startDate?: string
+  endDate?: string
+  language?: string[]    // o string si lo dejaste así en tu versión
+  minPax?: number | null
+  maxPax?: number | null
+  meetingPoint?: string
+  schedule?: string
+  includes?: string[]
+  notIncludes?: string[]
+  cancellationPolicy?: string
+  refundable?: boolean
+  images?: string[]
+  videoUrl?: string
+  mapUrl?: string
+  description?: string
+  highlights?: string[]
+  notesInternal?: string
+  checkoutUrl?: string
+}
+
 import { google } from 'googleapis'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
