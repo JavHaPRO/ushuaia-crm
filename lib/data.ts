@@ -1,6 +1,5 @@
 // lib/data.ts
-// ❌ sacá esta línea que rompe el build:
-// import type { Experience } from '../pages/api/experiences'
+import type { Experience } from '../pages/api/experiences'
 
 // ✅ definí un tipo local simple (o usá `any`)
 export type Experience = Record<string, any>
